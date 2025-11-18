@@ -1,20 +1,13 @@
 
 #include <iostream>
 #include <stdlib.h>
+#include "headerFile.h"
 using namespace std;
 
-float FtoC(float);
-float FtoK(float);
-float CtoF(float);
-float CtoK(float);
-float KtoC(float);
-float KtoF(float);
-float pobierzF();
-float pobierzC();
-float pobierzK();
-float check (float temp, char stopnie);
-void menu();
 
+double HISTORY[100] = {0};
+char HISTORY_TYPE[100] = {0};
+int dataCounter = 0;
 
 float FtoC(float F) {
    return (F - 32.0f) * 5.0f / 9.0f;
@@ -71,15 +64,43 @@ float check(float temp, char stopnie){
     return temp;
 }
 
+void zapiszHistorie(float stara, char typ1, float nowa, char typ2){
+    if(dataCounter + 2 > 100){
+        cout << "Brak miejsca w historii" << endl;
+        return;
+    }
+
+    HISTORY[dataCounter] = stara;
+    HISTORY_TYPE[dataCounter] = typ1;
+    HISTORY[dataCounter + 1] = nowa;
+    HISTORY_TYPE[dataCounter + 1] = typ2;
+    dataCounter += 2;
+}
+
+void pokazHistorie(){
+    cout << "Historia przeliczen:" << endl;
+    if(dataCounter == 0){
+        cout << "Brak zapisanych przeliczen" << endl;
+        return;
+    }
+
+    int entry = 1;
+    for(int i = 0; i < dataCounter; i += 2){
+        cout << "<" << entry++ << "> " << HISTORY[i] << HISTORY_TYPE[i] << " = " << HISTORY[i+1] << HISTORY_TYPE[i+1] << endl;
+    }
+    cout << "Koniec historii przeliczen" << endl;
+}
+
 void menu(){
 cout << "Wybierz opcje: " << endl;
-cout << "1 - przelicz Fahr -> Celsius" << endl;
-cout << "2 - przelicz Fahr -> Kelwin" << endl;
-cout << "3 - przelicz Celsius -> Fahr" << endl;
-cout << "4 - przelicz Celsius -> Kelwin" << endl;
-cout << "5 - przelicz Kelwin -> Celsius" << endl;
-cout << "6 - przelicz Kelwin -> Fahr" << endl;
-cout << "7 - zakoncz dzialanie programu" << endl;
+cout << "1 - Przelicz Fahr -> Celsius" << endl;
+cout << "2 - Przelicz Fahr -> Kelwin" << endl;
+cout << "3 - Przelicz Celsius -> Fahr" << endl;
+cout << "4 - Przelicz Celsius -> Kelwin" << endl;
+cout << "5 - Przelicz Kelwin -> Celsius" << endl;
+cout << "6 - Przelicz Kelwin -> Fahr" << endl;
+cout << "7 - Pokaz historie" << endl;
+cout << "8 - Zakoncz dzialanie programu" << endl;
 cout << "Wybor: " << endl; 
 }
 
@@ -94,10 +115,12 @@ while (1){
     system("cls");
     menu();
     cin >> wybor;
-    if (wybor < 1 || wybor > 7)
+
+    if (wybor < 1 || wybor > 8)
         return 0;
-    if (wybor == 7)
+    if (wybor == 8)
         return 0;
+
     switch(wybor){
         case 1:{
         temp = pobierzF();
@@ -107,6 +130,7 @@ while (1){
         else {
             wynik = FtoC(temp);
         cout << "Przeliczenie " << temp << " stopni Fahrenhaita na stopnie Celsjusza = " << FtoC(temp) << endl;
+        zapiszHistorie(temp, 'F', wynik, 'C');
         }
         cout << "Nacisnij ENTER zeby kontynuowac" << endl;
         cin.ignore();
@@ -119,8 +143,9 @@ while (1){
             cout << "Nie ma takiej temperatury" << endl;
         } 
         else {
-            wynik = FtoC(temp);
+            wynik = FtoK(temp);
         cout << "Przeliczenie " << temp << " stopni Fahrenheita na stopnie Kelwina = " << FtoK(temp) << endl;
+        zapiszHistorie(temp, 'F', wynik, 'K');
         }
         cout << "Nacisnij ENTER zeby kontynuowac" << endl;
         cin.ignore();
@@ -135,6 +160,7 @@ while (1){
         else {
             wynik = CtoF(temp);
         cout << "Przeliczenie " << temp << " stopni Celsjusza na stopnie Fahrenheita = " << CtoF(temp) << endl;
+        zapiszHistorie(temp, 'C', wynik, 'F');
         }
         cout << "Nacisnij ENTER zeby kontynuowac" << endl;
         cin.ignore();
@@ -149,6 +175,7 @@ while (1){
         else {
             wynik = CtoK(temp);
         cout << "Przeliczenie " << temp << " stopni Celsjusza na stopnie Kelwina = " << CtoK(temp) << endl;
+        zapiszHistorie(temp, 'C', wynik, 'K');
         }
         cout << "Nacisnij ENTER zeby kontynuowac" << endl;
         cin.ignore();
@@ -163,6 +190,7 @@ while (1){
         else {
             wynik = KtoC(temp);
         cout << "Przeliczenie " << temp << " stopni Kelwina na stopnie Celsjusza = " << KtoC(temp) << endl;
+        zapiszHistorie(temp, 'K', wynik, 'C');
         }
         cout << "Nacisnij ENTER zeby kontynuowac" << endl;
         cin.ignore();
@@ -177,12 +205,16 @@ while (1){
         else {
             wynik = KtoF(temp);
         cout << "Przeliczenie " << temp << " stopni Kelwina na stopnie Fahrenheita = " << KtoF(temp) << endl;
+        zapiszHistorie(temp, 'K', wynik, 'F');
         }
         cout << "Nacisnij ENTER zeby kontynuowac" << endl;
         cin.ignore();
         cin.get();
         break; 
         }
+        case 7:
+            pokazHistorie();
+            break;
         default:
         return 0;
     }
