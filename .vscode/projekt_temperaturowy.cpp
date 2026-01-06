@@ -2,8 +2,26 @@
 #include <iostream>
 #include <stdlib.h>
 #include "headerFile.h"
+#include <ctime>
 using namespace std;
 
+//konwersja tekstu na double
+
+bool convertToDouble(const char*str, double* outValue){
+    char* end;
+    double val = strtod(str, &end);
+    if (end == str || *end != '\0'){
+        return false;
+    }
+    *outValue = val;
+    return true;
+}
+
+//czyszczenie ekranu
+
+void czyscEkran(){
+    system("cls");
+}
 
 double HISTORY[100] = {0};
 char HISTORY_TYPE[100] = {0};
@@ -38,24 +56,57 @@ float KtoF(float K){
 //pobieranie danych do zwrocenia w main
 
 float pobierzF(){
-    float F;
+    char buf[50];
+    double F;
+    while (true){
     cout << "Podaj temperature w stopniach Fahrenheita" << endl;
-    cin >> F;
-    return F;
+    cin >> buf;
+    if (!convertToDouble(buf, &F)){
+        cout << "Niepoprawny format liczby. Wpisz ponownie" << endl;
+        continue;
+    }
+    if (!check((float)F, 'F')){
+        cout << "Niepoprawna temperatura dla Fahrenheita" << endl;
+        continue;
+    }
+    return (float)F;
+}
 }
 
 float pobierzC(){
-    float C;
+    char buf[50];
+    double C;
+    while (true){
     cout << "Podaj temperature w stopniach Celsjusza" << endl;
-    cin >> C;
-    return C;
+    cin >> buf;
+    if (!convertToDouble(buf, &C)){
+        cout << "Niepoprawny format liczby. Wpisz ponownie" << endl;
+        continue;
+    }
+    if (!check((float)C, 'C')){
+        cout << "Niepoprawna temperatura dla Celsjusza" << endl;
+        continue;
+    }
+    return (float)C;
+}
 }
 
 float pobierzK(){
-    float K;
+    char buf[50];
+    double K;
+    while (true){
     cout << "Podaj temperature w stopniach Kelwina" << endl;
-    cin >> K;
-    return K;
+    cin >> buf;
+    if (!convertToDouble(buf, &K)){
+        cout << "Niepoprawny format liczby. Wpisz ponownie" << endl;
+        continue;
+    }
+    if (!check((float)K, 'K')){
+        cout << "Niepoprawna temperatura dla Kelwina" << endl;
+        continue;
+    }
+    return (float)K;
+}
 }
 
 //sprawdzenie czy temperatura miesci sie w skali
@@ -142,6 +193,167 @@ void usunZHISTORII(){
     cout << "Wpis zostal usuniety" << endl;
     }
 
+//modyfikacja historii
+
+void modyfikujWpis(){
+    if (dataCounter == 0){
+        cout << "Historia jest pusta" << endl;
+        return;
+    }
+    pokazHistorie();
+    int n;
+    cout << "Podaj numer wpisu do modyfikacji: " << endl;
+    cin >> n;
+        if (n < 1 || n > dataCounter){
+        cout << "Nieprawidlowy numer" << endl;
+        return;
+    }
+    int indeks = (n-1) *2;
+
+    char buf[50];
+    double nowaTemp;
+    char nowyTyp;
+
+    while (true){
+    cout << "Podaj nowa temperature: " << endl;
+    cin >> buf;
+    if(!convertToDouble(buf, &nowaTemp)){
+        cout << "Niepoprawny format liczby!\n";
+        continue;
+    }
+    break;
+}
+    while(true){
+    cout << "Podaj nowy typ C/F/K" << endl;
+    cin >> nowyTyp;
+    nowyTyp = toupper(nowyTyp); //zmiana malej litery na duza
+    if (nowyTyp != 'C' && nowyTyp != 'F' && nowyTyp != 'K'){
+        cout << "Niepoprawny typ. Wprowadz C/F/K\n";
+        continue;
+    }
+    if (!check ((float)nowaTemp, nowyTyp)){
+        cout << "Niepoprawna temperatura dla tego typu";
+        continue;
+    }
+    break;
+}
+
+    HISTORY[indeks] = nowaTemp;
+    HISTORY_TYPE[indeks] = nowyTyp;
+    
+    char docelowyTyp = HISTORY_TYPE[indeks +1];
+    float przeliczonaTemp;
+
+    if (nowyTyp == 'C' && docelowyTyp == 'F'){
+        przeliczonaTemp = CtoF(nowaTemp);
+    }
+    else if (nowyTyp == 'C' && docelowyTyp == 'K'){
+        przeliczonaTemp =CtoK(nowaTemp);
+    }
+        else if (nowyTyp == 'F' && docelowyTyp == 'C'){
+        przeliczonaTemp =FtoC(nowaTemp);
+    }
+        else if (nowyTyp == 'F' && docelowyTyp == 'K'){
+        przeliczonaTemp =FtoK(nowaTemp);
+    }
+        else if (nowyTyp == 'K' && docelowyTyp == 'C'){
+        przeliczonaTemp =KtoC(nowaTemp);
+    }
+        else if (nowyTyp == 'K' && docelowyTyp == 'F'){
+        przeliczonaTemp =KtoF(nowaTemp);
+    }
+    HISTORY[indeks + 1] = przeliczonaTemp;
+    cout << "Wpis zaktualizowany" << endl;
+}
+
+//losowanie historii
+
+void losujHistorie(){
+    srand(time(0));
+    int n;
+    cout << "Podaj ile losowych wpisow dodac: " << endl;
+    cin >> n;
+    if (dataCounter * 2 + n * 2 > 100){
+        int dostepne = (100 - dataCounter * 2)/2;
+        cout << "Mozna dodac tylko " << dostepne << "wpisow. Czy kontunowac? (1 - tak, 2 - nie)" << endl;
+        int wybor;
+        cin >> wybor;
+        if (wybor == 0){
+            return;
+        }
+        n = dostepne;
+    }
+    for (int i = 0; i < n; i ++){
+        char losowyTyp;
+        int randTyp = rand() % 3;
+        if (randTyp == 0){
+            losowyTyp = 'C';
+        }
+        else if (randTyp == 1){
+            losowyTyp = 'F';
+        }
+        else {
+            losowyTyp = 'K';
+        }
+
+        int minTemp;
+        if (losowyTyp == 'C'){
+            minTemp = -273;
+        }
+        else if (losowyTyp == 'F'){
+            minTemp = -459;
+        }
+        else {
+            minTemp = 0;
+        }
+
+        int tempInt = minTemp+ rand() % 1001; //losowanie z 1000
+        double temp = (double)tempInt; //konwersja na double
+        char docelowyTyp;
+        do{
+            int randDoc = rand() % 3;
+            if(randDoc == 0){
+                docelowyTyp = 'C';
+            }
+            else if (randDoc == 1){
+                docelowyTyp = 'F';
+            }
+            else{
+                docelowyTyp = 'K';
+            }
+        }
+            while (docelowyTyp == losowyTyp); 
+
+            double wynik;
+            if (losowyTyp == 'C' && docelowyTyp == 'F'){
+                wynik = CtoF((float)temp);
+            }
+            else if (losowyTyp == 'C' && docelowyTyp == 'K'){
+                wynik = CtoK((float)temp);
+            }
+            else if (losowyTyp == 'F' && docelowyTyp == 'C'){
+                wynik = FtoC((float)temp);
+            }
+                        else if (losowyTyp == 'F' && docelowyTyp == 'K'){
+                wynik = FtoK((float)temp);
+            }
+                        else if (losowyTyp == 'K' && docelowyTyp == 'C'){
+                wynik = KtoC((float)temp);
+            }
+                        else if (losowyTyp == 'K' && docelowyTyp == 'F'){
+                wynik = KtoF((float)temp);
+            }
+            else{
+                wynik = float(temp);
+            }
+            if (!zapiszHistorie((float)temp, losowyTyp, (float)wynik, docelowyTyp)){
+                cout << "Historia jest pelna " << endl;
+                break;
+            }
+    }
+    cout << "Dodano " << n << " losowych wpisow do historii" << endl;
+}
+
 //menu historii
 
 void menuHistorii(){
@@ -178,8 +390,10 @@ cout << "5 - Przelicz Kelwin -> Celsius" << endl;
 cout << "6 - Przelicz Kelwin -> Fahr" << endl;
 cout << "7 - Pokaz historie" << endl;
 cout << "8 - Usun wpis z historii" << endl;
+cout << "9 - Modyfikuj wpis z historii" << endl;
+cout << "10 - Wprowadz losowe wpisy do historii" << endl;
 cout << "-1 - Zakoncz dzialanie programu" << endl;
-cout << "Wybor: " << endl; 
+cout << "Wybor: \n";
 }
 
 int main(){
@@ -190,7 +404,7 @@ float wynik;
  
 
 while (1){
-    system("cls");
+    czyscEkran();
     menu();
     cin >> wybor;
 
@@ -273,9 +487,18 @@ while (1){
         usunZHISTORII();
         break;
     }
+        case 9:{
+            modyfikujWpis();
+            break;
+        }
+        case 10:{
+            losujHistorie();
+        }
         default:
         cout << "Nieznana opcja\n";
     }
+    cout << "Nacisnij dowolny klawisz zeby przejsc dalej" << endl;
+    system("pause");
 }
 return 0;
 }
